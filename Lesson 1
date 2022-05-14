@@ -1,0 +1,45 @@
+import wpilib
+import wpilib.drive
+from wpilib.drive import *
+import rev
+
+
+class MyRobot(wpilib.TimedRobot):
+
+    def robotInit(self):
+        """Robot initialization function"""
+        wpilib.CameraServer.launch()
+        self.LeftMotor = rev.CANSparkMax(1, rev._rev.CANSparkMaxLowLevel.MotorType.kBrushless)
+        self.RightMotor = rev.CANSparkMax(2, rev._rev.CANSparkMaxLowLevel.MotorType.kBrushless)
+        
+
+        self.left = wpilib.SpeedControllerGroup(self.LeftMotor)
+        self.right = wpilib.SpeedControllerGroup(self.RightMotor)
+
+        self.myRobot = DifferentialDrive(self.left, self.right)
+        self.timer= wpilib.Timer()
+        self.myRobot.setExpiration(0.1)
+
+        # joysticks 0 & 1 on the driver station
+        self.driver = wpilib.Joystick(0)
+        self.manip = wpilib.Joystick(1)
+
+
+    def teleopPeriodic(self):
+        """This function is called periodically during operator control."""
+        """Runs the motors with tank steering"""
+
+        self.myRobot.tankDrive(self.driver.getRawAxis(1)*-0.5, self.driver.getRawAxis(5) * .5, False)
+        self.arm.set(self.manip.getRawAxis(1)*-0.5)
+
+        if self.manip.getRawButton(1) or self.manip.getRawButton(2):
+            if self.manip.getRawButton(1):
+                self.Intake.set(1)
+            else:
+                self.Intake.set(-1)
+        else:
+            self.Intake.set(0)
+
+
+if __name__ == "__main__":
+    wpilib.run(MyRobot)
